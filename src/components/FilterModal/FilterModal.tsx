@@ -102,11 +102,11 @@ const FilterModal = ({
         let R = 0;
         let G = 0;
         let B = 0;
-        for (let s = -1; s <= 1; s++) {
-          for (let t = -1; t <= 1; t++) {
-            R += kernel[s + 1][t + 1] * imageMatrix[y + t][x - 3 + s * 4];
-            G += kernel[s + 1][t + 1] * imageMatrix[y + t][x - 2 + s * 4];
-            B += kernel[s + 1][t + 1] * imageMatrix[y + t][x - 1 + s * 4];
+        for (let t = -1; t <= 1; t++) {
+          for (let s = -1; s <= 1; s++) {
+            R += kernel[t + 1][s + 1] * imageMatrix[y + t][x - 3 + s * 4];
+            G += kernel[t + 1][s + 1] * imageMatrix[y + t][x - 2 + s * 4];
+            B += kernel[t + 1][s + 1] * imageMatrix[y + t][x - 1 + s * 4];
           }
         }
         newImageData[pos] = R;

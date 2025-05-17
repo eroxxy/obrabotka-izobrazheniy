@@ -99,10 +99,15 @@ function App() {
   const renderImage = () => {
     const [canvas, ctx] = getCanvasNCtx(canvasRef);
     const imgPromise = imageUriToImgPromise(loadedImage.imageUri);
+
     imgPromise.then((img) => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
     });
-  }
+  };
 
   const renderImageFull = (img: HTMLImageElement) => {
     const [canvas, _] = getCanvasNCtx(canvasRef);
@@ -122,18 +127,10 @@ function App() {
     renderImage();
   }
 
-  const changeImageScale = (scale: number) => {
-    const [canvas, _] = getCanvasNCtx(canvasRef);
-    
-    const scaleMultiplyer = scale / 100; 
-
-    const imgPromise = imageUriToImgPromise(loadedImage.imageUri);
-    imgPromise.then((img) => {
-      canvas.width = img.width * scaleMultiplyer;
-      canvas.height = img.height * scaleMultiplyer;
-      renderImage();
-    })
-  }
+  const changeImageScale = (newScale: number) => {
+    setImageScale(newScale);
+    renderImage();
+  };
 
   const uploadImageToCanvas = (file: File) => {
     setLoadedImage({
@@ -144,15 +141,22 @@ function App() {
 
   const getPixelInfo = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const [_, ctx] = getCanvasNCtx(canvasRef);
-    const mouseX = e.nativeEvent.offsetX;
-    const mouseY = e.nativeEvent.offsetY;
-    const p = ctx.getImageData(mouseX, mouseY, 1, 1).data;
+    const canvas = canvasRef.current;
+    if (!canvas) return { p: [0, 0, 0, 0], x: 0, y: 0 };
+
+    const scaleFactor = scale / 100;
+
+    const bounds = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - bounds.left) / scaleFactor);
+    const y = Math.floor((e.clientY - bounds.top) / scaleFactor);
+
+    const p = ctx.getImageData(x, y, 1, 1).data;
     return {
       p: p,
-      x: mouseX,
-      y: mouseY,
-    }
-  }
+      x: x,
+      y: y,
+    };
+  };
 
   const pixelInfoChange = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const {p, x, y} = getPixelInfo(e);
@@ -411,6 +415,11 @@ function App() {
           <canvas
             ref={canvasRef}
             className='canvas'
+            style={{
+              transform: `scale(${scale / 100})`,
+              transformOrigin: 'top left',
+              display: 'block'
+            }}
             onMouseMove={pixelInfoChange}
             onClick={colorChange}
           />
@@ -420,6 +429,11 @@ function App() {
           <canvas
             ref={canvasRef}
             className='canvas'
+            style={{
+              transform: `scale(${scale / 100})`,
+              transformOrigin: 'top left',
+              display: 'block'
+            }}
             onMouseMove={pixelInfoChange}
             onClick={colorChange}
           />
